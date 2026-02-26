@@ -1,0 +1,237 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-bg: #f5f6fa;
+  --color-surface: #ffffff;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-border: #d1d5db;
+  --color-text: #111827;
+  --color-muted: #6b7280;
+  --radius: 6px;
+  --shadow: 0 1px 3px rgba(0,0,0,.12);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+body { min-height: 100vh; }
+
+/* ─── Layout ─── */
+header {
+  background: var(--color-primary);
+  color: #fff;
+  padding: 0 1.5rem;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+header h1 { font-size: 1.1rem; flex: 1; }
+
+#main-content {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ─── Cards / sections ─── */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+}
+
+.card h2 {
+  font-size: .95rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--color-muted);
+  margin-bottom: 1rem;
+}
+
+/* ─── Welcome screen ─── */
+#welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+#welcome h2 { font-size: 1.4rem; color: var(--color-text); text-transform: none; letter-spacing: 0; }
+#welcome p { color: var(--color-muted); max-width: 480px; }
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  justify-content: center;
+  margin-top: .5rem;
+}
+
+/* ─── Buttons ─── */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius);
+  padding: .5rem 1rem;
+  font-size: .9rem;
+  font-family: inherit;
+  font-weight: 500;
+  transition: background .15s;
+}
+
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+.btn-secondary:hover { background: #eff6ff; }
+
+.btn-danger { background: var(--color-danger); color: #fff; font-size: .8rem; padding: .3rem .65rem; }
+.btn-danger:hover { background: var(--color-danger-hover); }
+
+.btn-sm { font-size: .8rem; padding: .35rem .7rem; }
+
+/* ─── Forms ─── */
+.form-grid {
+  display: grid;
+  gap: .85rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+.field label { font-size: .82rem; font-weight: 600; color: var(--color-muted); }
+
+input[type=text], input[type=email], input[type=tel], textarea, input[type=date] {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: .45rem .65rem;
+  font-size: .9rem;
+  font-family: inherit;
+  width: 100%;
+  background: #fff;
+  transition: border-color .15s;
+}
+input:focus, textarea:focus { outline: none; border-color: var(--color-primary); }
+textarea { resize: vertical; min-height: 80px; }
+
+/* 2-col grid on wider screens */
+@media (min-width: 560px) {
+  .form-grid-2 { grid-template-columns: 1fr 1fr; }
+}
+
+/* ─── Attachments list ─── */
+.attachment-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .5rem .75rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: .85rem;
+}
+
+.attachment-item .name { flex: 1; word-break: break-all; }
+.attachment-item .meta { color: var(--color-muted); font-size: .78rem; white-space: nowrap; }
+
+/* ─── Dynamic list sections (experience / education) ─── */
+.entry-list { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem; }
+
+.entry-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: .85rem;
+  position: relative;
+}
+
+.entry-card .remove-entry {
+  position: absolute;
+  top: .5rem;
+  right: .5rem;
+}
+
+/* ─── Skills tags ─── */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin-bottom: .6rem;
+}
+
+.tag {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  background: #dbeafe;
+  color: #1e40af;
+  border-radius: 999px;
+  padding: .2rem .6rem;
+  font-size: .8rem;
+}
+
+.tag button {
+  background: none;
+  color: inherit;
+  font-size: .75rem;
+  padding: 0;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* ─── Toolbar ─── */
+#toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  align-items: center;
+}
+
+/* ─── Toast ─── */
+#toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(120%);
+  background: #1f2937;
+  color: #fff;
+  padding: .55rem 1.1rem;
+  border-radius: 999px;
+  font-size: .85rem;
+  pointer-events: none;
+  transition: transform .25s;
+  z-index: 100;
+}
+
+#toast.show { transform: translateX(-50%) translateY(0); }
