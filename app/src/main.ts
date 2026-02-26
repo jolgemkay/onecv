@@ -16,6 +16,13 @@ appEl.innerHTML = `
 
 const mainContent = document.querySelector<HTMLDivElement>('#main-content')!;
 const toastEl = document.querySelector<HTMLDivElement>('#toast')!;
+const headerEl = document.querySelector<HTMLElement>('header')!;
+
+// ── Header button helpers ────────────────────────────────────────────────────
+function setHeaderButtons(html: string) {
+  headerEl.querySelectorAll('.header-btn').forEach(b => b.remove());
+  if (html) headerEl.insertAdjacentHTML('beforeend', html);
+}
 
 // ── Toast helper ─────────────────────────────────────────────────────────────
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -28,10 +35,25 @@ function showToast(msg: string) {
 
 // ── State ────────────────────────────────────────────────────────────────────
 let current: OcvWorkspace | null = null;
+let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleAutoSave() {
+  if (autoSaveTimer) clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(async () => {
+    if (!current) return;
+    try {
+      await saveWorkspace(current);
+      showToast('Auto-saved.');
+    } catch {
+      showToast('Auto-save failed.');
+    }
+  }, 1200);
+}
 
 // ── Show welcome screen ───────────────────────────────────────────────────────
 function showWelcome() {
   current = null;
+  setHeaderButtons('');
   renderWelcome(mainContent, handleNew, handleOpen);
 }
 
@@ -41,18 +63,27 @@ function showEditor(ws: OcvWorkspace) {
   renderWorkspace(
     mainContent,
     ws,
-    handleSave,
-    handleExport,
-    handleClose,
+    handleDelete,
     handleAddAttachment,
     handleRemoveAttachment,
+    scheduleAutoSave,
   );
+  setHeaderButtons(`
+    <button id="btn-header-save" class="header-btn" title="Save">
+      <span class="material-symbols-outlined">save</span>
+    </button>
+    <button id="btn-header-export" class="header-btn" title="Download .ocv">
+      <span class="material-symbols-outlined">download</span>
+    </button>
+  `);
+  headerEl.querySelector('#btn-header-save')!.addEventListener('click', handleSave);
+  headerEl.querySelector('#btn-header-export')!.addEventListener('click', handleExport);
 }
 
 // ── Handlers ─────────────────────────────────────────────────────────────────
 function handleNew() {
   showEditor(createEmptyWorkspace());
-  showToast('New workspace created.');
+  showToast('New CV created.');
 }
 
 async function handleOpen(file: File) {
@@ -70,7 +101,7 @@ async function handleSave() {
   if (!current) return;
   try {
     await saveWorkspace(current);
-    showToast('Saved to browser storage.');
+    showToast('Saved.');
   } catch (err) {
     alert(`Save failed: ${err instanceof Error ? err.message : String(err)}`);
   }
@@ -88,9 +119,9 @@ async function handleExport() {
   }
 }
 
-async function handleClose() {
+async function handleDelete() {
   if (current) {
-    if (!confirm('Close workspace? Unsaved changes will be lost.')) return;
+    if (!confirm('Delete this CV? It will be removed from browser storage.')) return;
     await clearWorkspace();
   }
   showWelcome();
@@ -122,7 +153,7 @@ async function init() {
     const saved = await loadWorkspace();
     if (saved) {
       showEditor(saved);
-      showToast('Restored workspace from browser storage.');
+      showToast('CV restored from browser storage.');
     } else {
       showWelcome();
     }

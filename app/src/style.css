@@ -37,6 +37,21 @@ header {
 
 header h1 { font-size: 1.1rem; flex: 1; }
 
+.header-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: .3rem .4rem;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+}
+.header-btn:hover { background: rgba(255,255,255,.2); }
+.header-btn .material-symbols-outlined { font-size: 1.4rem; }
+
 #main-content {
   max-width: 860px;
   margin: 0 auto;
@@ -193,9 +208,8 @@ textarea { resize: vertical; min-height: 80px; }
 }
 
 .entry-card .remove-entry {
-  position: absolute;
-  top: .5rem;
-  right: .5rem;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
 /* ─── Collapsible section cards (details/summary) ─── */
@@ -312,13 +326,24 @@ details.entry-card[open] > .entry-summary {
   cursor: pointer;
 }
 
-/* ─── Toolbar ─── */
-#toolbar {
+/* ─── Delete section at the bottom ─── */
+#delete-section {
   display: flex;
-  flex-wrap: wrap;
-  gap: .5rem;
-  align-items: center;
+  justify-content: center;
+  padding: .5rem 0 1rem;
 }
+
+#btn-delete {
+  background: var(--color-danger);
+  color: #fff;
+  padding: .55rem 2rem;
+  font-size: .9rem;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  transition: background .15s;
+}
+#btn-delete:hover { background: var(--color-danger-hover); }
 
 /* ─── Toast ─── */
 #toast {
