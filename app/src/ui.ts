@@ -6,19 +6,12 @@ import type { OcvWorkspace, Experience, Education, Course, Certificate } from '.
 export function renderWorkspace(
   container: HTMLElement,
   workspace: OcvWorkspace,
-  onSave: () => void,
-  onExport: () => void,
-  onClose: () => void,
+  onDelete: () => void,
   onAddAttachment: (file: File) => Promise<void>,
   onRemoveAttachment: (hash: string) => void,
+  onChange?: () => void,
 ): void {
   container.innerHTML = `
-    <div id="toolbar" class="card">
-      <button id="btn-save" class="btn-primary btn-sm">💾 Save</button>
-      <button id="btn-export" class="btn-secondary btn-sm">⬇ Export .ocv</button>
-      <button id="btn-close" class="btn-secondary btn-sm">✕ Close</button>
-    </div>
-
     <details open class="card" id="section-cv">
       <summary class="card-summary"><h2>CV — Personal Info</h2></summary>
       <div class="form-grid form-grid-2">
@@ -82,10 +75,14 @@ export function renderWorkspace(
       <summary class="card-summary"><h2>Attachments</h2></summary>
       <ul id="attachment-list" class="attachment-list"></ul>
       <div>
-        <input type="file" id="attachment-file" style="display:none" multiple />
+        <input type="file" id="attachment-file" style="display:none" multiple accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.gif,.webp,.zip" />
         <button id="btn-add-attachment" class="btn-secondary btn-sm">+ Add File</button>
       </div>
     </details>
+
+    <div id="delete-section">
+      <button id="btn-delete">Delete CV</button>
+    </div>
   `;
 
   // ── Populate fields ──────────────────────────────────────────────────────
@@ -101,6 +98,7 @@ export function renderWorkspace(
     const el = container.querySelector(id) as HTMLInputElement | HTMLTextAreaElement;
     el.addEventListener('input', () => {
       cv[key] = el.value;
+      onChange?.();
     });
   }
   bindInput('#cv-name', 'name');
@@ -119,7 +117,7 @@ export function renderWorkspace(
       card.open = true;
       const label = (exp.title || exp.company)
         ? `${exp.title || '(untitled)'}${exp.company ? ' @ ' + exp.company : ''}`
-        : `Experience ${i + 1}`;
+        : `New Experience`;
       card.innerHTML = `
         <summary class="entry-summary">
           <span>${escapeHtml(label)}</span>
@@ -143,6 +141,7 @@ export function renderWorkspace(
         el.value = String(exp[key] ?? '');
         el.addEventListener('input', () => {
           cv.experience[i][key as keyof Experience] = el.value as never;
+          onChange?.();
         });
       });
 
@@ -170,7 +169,7 @@ export function renderWorkspace(
       card.open = true;
       const label = (edu.degree || edu.institution)
         ? `${edu.degree || '(no degree)'}${edu.institution ? ' @ ' + edu.institution : ''}`
-        : `Education ${i + 1}`;
+        : `New Education`;
       card.innerHTML = `
         <summary class="entry-summary">
           <span>${escapeHtml(label)}</span>
@@ -189,6 +188,7 @@ export function renderWorkspace(
         el.value = String(edu[key] ?? '');
         el.addEventListener('input', () => {
           cv.education[i][key as keyof Education] = el.value as never;
+          onChange?.();
         });
       });
 
@@ -217,7 +217,7 @@ export function renderWorkspace(
       card.open = true;
       const label = course.title
         ? `${course.title}${course.provider ? ' — ' + course.provider : ''}`
-        : `Course ${i + 1}`;
+        : `New Course`;
       card.innerHTML = `
         <summary class="entry-summary">
           <span>${escapeHtml(label)}</span>
@@ -236,6 +236,7 @@ export function renderWorkspace(
         el.value = String(course[key] ?? '');
         el.addEventListener('input', () => {
           cv.courses[i][key as keyof Course] = el.value as never;
+          onChange?.();
         });
       });
 
@@ -264,7 +265,7 @@ export function renderWorkspace(
       card.open = true;
       const label = cert.title
         ? `${cert.title}${cert.issuer ? ' — ' + cert.issuer : ''}`
-        : `Certificate ${i + 1}`;
+        : `New Certificate`;
       card.innerHTML = `
         <summary class="entry-summary">
           <span>${escapeHtml(label)}</span>
@@ -283,6 +284,7 @@ export function renderWorkspace(
         el.value = String(cert[key] ?? '');
         el.addEventListener('input', () => {
           cv.certificates[i][key as keyof Certificate] = el.value as never;
+          onChange?.();
         });
       });
 
@@ -401,10 +403,8 @@ export function renderWorkspace(
     renderAttachments();
   });
 
-  // ── Toolbar buttons ────────────────────────────────────────────────────
-  container.querySelector('#btn-save')!.addEventListener('click', onSave);
-  container.querySelector('#btn-export')!.addEventListener('click', onExport);
-  container.querySelector('#btn-close')!.addEventListener('click', onClose);
+  // ── Delete button ──────────────────────────────────────────────────────
+  container.querySelector('#btn-delete')!.addEventListener('click', onDelete);
 }
 
 /** Render the welcome / landing screen. */
@@ -418,7 +418,7 @@ export function renderWelcome(
       <h2>Welcome to OneCV</h2>
       <p>Manage your CV as a portable, self-contained <code>.ocv</code> file — everything stays in your browser.</p>
       <div class="btn-row">
-        <button id="btn-new" class="btn-primary">✨ New workspace</button>
+        <button id="btn-new" class="btn-primary">✨ New CV</button>
         <button id="btn-open" class="btn-secondary">📂 Open .ocv file</button>
       </div>
       <input type="file" id="open-file-input" accept=".ocv" style="display:none" />
