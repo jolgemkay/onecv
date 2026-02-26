@@ -1,4 +1,4 @@
-import type { OcvWorkspace, Experience, Education } from './types.js';
+import type { OcvWorkspace, Experience, Education, Course, Certificate } from './types.js';
 
 /**
  * Render the full workspace editing UI into #main-content.
@@ -19,8 +19,8 @@ export function renderWorkspace(
       <button id="btn-close" class="btn-secondary btn-sm">✕ Close</button>
     </div>
 
-    <div class="card" id="section-cv">
-      <h2>CV — Personal Info</h2>
+    <details open class="card" id="section-cv">
+      <summary class="card-summary"><h2>CV — Personal Info</h2></summary>
       <div class="form-grid form-grid-2">
         <div class="field">
           <label for="cv-name">Full Name</label>
@@ -43,37 +43,49 @@ export function renderWorkspace(
         <label for="cv-summary">Summary</label>
         <textarea id="cv-summary" placeholder="Brief professional summary…"></textarea>
       </div>
-    </div>
+    </details>
 
-    <div class="card" id="section-experience">
-      <h2>Experience</h2>
+    <details open class="card" id="section-experience">
+      <summary class="card-summary"><h2>Experience</h2></summary>
       <div id="experience-list" class="entry-list"></div>
       <button id="btn-add-exp" class="btn-secondary btn-sm">+ Add Experience</button>
-    </div>
+    </details>
 
-    <div class="card" id="section-education">
-      <h2>Education</h2>
+    <details open class="card" id="section-education">
+      <summary class="card-summary"><h2>Education</h2></summary>
       <div id="education-list" class="entry-list"></div>
       <button id="btn-add-edu" class="btn-secondary btn-sm">+ Add Education</button>
-    </div>
+    </details>
 
-    <div class="card" id="section-skills">
-      <h2>Skills</h2>
+    <details open class="card" id="section-courses">
+      <summary class="card-summary"><h2>Courses</h2></summary>
+      <div id="courses-list" class="entry-list"></div>
+      <button id="btn-add-course" class="btn-secondary btn-sm">+ Add Course</button>
+    </details>
+
+    <details open class="card" id="section-certificates">
+      <summary class="card-summary"><h2>Certificates</h2></summary>
+      <div id="certificates-list" class="entry-list"></div>
+      <button id="btn-add-cert" class="btn-secondary btn-sm">+ Add Certificate</button>
+    </details>
+
+    <details open class="card" id="section-skills">
+      <summary class="card-summary"><h2>Skills</h2></summary>
       <div id="skills-tags" class="tags"></div>
       <div class="field" style="display:flex;gap:.5rem;align-items:center">
         <input type="text" id="skill-input" placeholder="Add a skill…" style="flex:1" />
         <button id="btn-add-skill" class="btn-secondary btn-sm">Add</button>
       </div>
-    </div>
+    </details>
 
-    <div class="card" id="section-attachments">
-      <h2>Attachments</h2>
+    <details open class="card" id="section-attachments">
+      <summary class="card-summary"><h2>Attachments</h2></summary>
       <ul id="attachment-list" class="attachment-list"></ul>
       <div>
         <input type="file" id="attachment-file" style="display:none" multiple />
         <button id="btn-add-attachment" class="btn-secondary btn-sm">+ Add File</button>
       </div>
-    </div>
+    </details>
   `;
 
   // ── Populate fields ──────────────────────────────────────────────────────
@@ -102,11 +114,18 @@ export function renderWorkspace(
   function renderExperience() {
     expList.innerHTML = '';
     cv.experience.forEach((exp, i) => {
-      const card = document.createElement('div');
+      const card = document.createElement('details');
       card.className = 'entry-card';
+      card.open = true;
+      const label = (exp.title || exp.company)
+        ? `${exp.title || '(untitled)'}${exp.company ? ' @ ' + exp.company : ''}`
+        : `Experience ${i + 1}`;
       card.innerHTML = `
-        <button class="btn-danger btn-sm remove-entry" data-index="${i}" title="Remove">✕</button>
-        <div class="form-grid form-grid-2" style="gap:.6rem">
+        <summary class="entry-summary">
+          <span>${escapeHtml(label)}</span>
+          <button class="btn-danger btn-sm remove-entry" data-index="${i}" title="Remove">✕</button>
+        </summary>
+        <div class="form-grid form-grid-2" style="gap:.6rem;padding:.85rem">
           <div class="field"><label>Title</label><input type="text" data-exp="${i}" data-key="title" value="" /></div>
           <div class="field"><label>Company</label><input type="text" data-exp="${i}" data-key="company" value="" /></div>
           <div class="field"><label>From</label><input type="date" data-exp="${i}" data-key="from" value="" /></div>
@@ -127,7 +146,8 @@ export function renderWorkspace(
         });
       });
 
-      card.querySelector('.remove-entry')!.addEventListener('click', () => {
+      card.querySelector('.remove-entry')!.addEventListener('click', (e) => {
+        e.stopPropagation();
         cv.experience.splice(i, 1);
         renderExperience();
       });
@@ -145,11 +165,18 @@ export function renderWorkspace(
   function renderEducation() {
     eduList.innerHTML = '';
     cv.education.forEach((edu, i) => {
-      const card = document.createElement('div');
+      const card = document.createElement('details');
       card.className = 'entry-card';
+      card.open = true;
+      const label = (edu.degree || edu.institution)
+        ? `${edu.degree || '(no degree)'}${edu.institution ? ' @ ' + edu.institution : ''}`
+        : `Education ${i + 1}`;
       card.innerHTML = `
-        <button class="btn-danger btn-sm remove-entry" data-index="${i}" title="Remove">✕</button>
-        <div class="form-grid form-grid-2" style="gap:.6rem">
+        <summary class="entry-summary">
+          <span>${escapeHtml(label)}</span>
+          <button class="btn-danger btn-sm remove-entry" data-index="${i}" title="Remove">✕</button>
+        </summary>
+        <div class="form-grid form-grid-2" style="gap:.6rem;padding:.85rem">
           <div class="field"><label>Degree</label><input type="text" data-edu="${i}" data-key="degree" value="" /></div>
           <div class="field"><label>Institution</label><input type="text" data-edu="${i}" data-key="institution" value="" /></div>
           <div class="field"><label>From</label><input type="date" data-edu="${i}" data-key="from" value="" /></div>
@@ -165,7 +192,8 @@ export function renderWorkspace(
         });
       });
 
-      card.querySelector('.remove-entry')!.addEventListener('click', () => {
+      card.querySelector('.remove-entry')!.addEventListener('click', (e) => {
+        e.stopPropagation();
         cv.education.splice(i, 1);
         renderEducation();
       });
@@ -176,6 +204,100 @@ export function renderWorkspace(
   container.querySelector('#btn-add-edu')!.addEventListener('click', () => {
     cv.education.push({ degree: '', institution: '', from: '', to: '' });
     renderEducation();
+  });
+
+  // ── Courses ────────────────────────────────────────────────────────────
+  cv.courses = cv.courses ?? [];
+  const coursesList = container.querySelector('#courses-list') as HTMLDivElement;
+  function renderCourses() {
+    coursesList.innerHTML = '';
+    cv.courses.forEach((course, i) => {
+      const card = document.createElement('details');
+      card.className = 'entry-card';
+      card.open = true;
+      const label = course.title
+        ? `${course.title}${course.provider ? ' — ' + course.provider : ''}`
+        : `Course ${i + 1}`;
+      card.innerHTML = `
+        <summary class="entry-summary">
+          <span>${escapeHtml(label)}</span>
+          <button class="btn-danger btn-sm remove-entry" data-index="${i}" title="Remove">✕</button>
+        </summary>
+        <div class="form-grid form-grid-2" style="gap:.6rem;padding:.85rem">
+          <div class="field"><label>Title</label><input type="text" data-key="title" value="" /></div>
+          <div class="field"><label>Provider</label><input type="text" data-key="provider" value="" /></div>
+          <div class="field"><label>Date</label><input type="date" data-key="date" value="" /></div>
+          <div class="field"><label>URL</label><input type="url" data-key="url" value="" placeholder="https://…" /></div>
+        </div>`;
+      coursesList.appendChild(card);
+
+      card.querySelectorAll<HTMLInputElement>('[data-key]').forEach(el => {
+        const key = el.dataset.key as keyof Course;
+        el.value = String(course[key] ?? '');
+        el.addEventListener('input', () => {
+          cv.courses[i][key as keyof Course] = el.value as never;
+        });
+      });
+
+      card.querySelector('.remove-entry')!.addEventListener('click', (e) => {
+        e.stopPropagation();
+        cv.courses.splice(i, 1);
+        renderCourses();
+      });
+    });
+  }
+  renderCourses();
+
+  container.querySelector('#btn-add-course')!.addEventListener('click', () => {
+    cv.courses.push({ title: '', provider: '', date: '', url: '' });
+    renderCourses();
+  });
+
+  // ── Certificates ───────────────────────────────────────────────────────
+  cv.certificates = cv.certificates ?? [];
+  const certsList = container.querySelector('#certificates-list') as HTMLDivElement;
+  function renderCertificates() {
+    certsList.innerHTML = '';
+    cv.certificates.forEach((cert, i) => {
+      const card = document.createElement('details');
+      card.className = 'entry-card';
+      card.open = true;
+      const label = cert.title
+        ? `${cert.title}${cert.issuer ? ' — ' + cert.issuer : ''}`
+        : `Certificate ${i + 1}`;
+      card.innerHTML = `
+        <summary class="entry-summary">
+          <span>${escapeHtml(label)}</span>
+          <button class="btn-danger btn-sm remove-entry" data-index="${i}" title="Remove">✕</button>
+        </summary>
+        <div class="form-grid form-grid-2" style="gap:.6rem;padding:.85rem">
+          <div class="field"><label>Title</label><input type="text" data-key="title" value="" /></div>
+          <div class="field"><label>Issuer</label><input type="text" data-key="issuer" value="" /></div>
+          <div class="field"><label>Date</label><input type="date" data-key="date" value="" /></div>
+          <div class="field"><label>URL</label><input type="url" data-key="url" value="" placeholder="https://…" /></div>
+        </div>`;
+      certsList.appendChild(card);
+
+      card.querySelectorAll<HTMLInputElement>('[data-key]').forEach(el => {
+        const key = el.dataset.key as keyof Certificate;
+        el.value = String(cert[key] ?? '');
+        el.addEventListener('input', () => {
+          cv.certificates[i][key as keyof Certificate] = el.value as never;
+        });
+      });
+
+      card.querySelector('.remove-entry')!.addEventListener('click', (e) => {
+        e.stopPropagation();
+        cv.certificates.splice(i, 1);
+        renderCertificates();
+      });
+    });
+  }
+  renderCertificates();
+
+  container.querySelector('#btn-add-cert')!.addEventListener('click', () => {
+    cv.certificates.push({ title: '', issuer: '', date: '', url: '' });
+    renderCertificates();
   });
 
   // ── Skills ────────────────────────────────────────────────────────────
@@ -222,14 +344,47 @@ export function renderWorkspace(
     workspace.manifest.files.forEach(f => {
       const li = document.createElement('li');
       li.className = 'attachment-item';
-      li.innerHTML = `
-        <span class="name">${escapeHtml(f.originalName)}</span>
-        <span class="meta">${escapeHtml(f.mime)} · ${formatBytes(f.size)}</span>
-        <button class="btn-danger" data-hash="${escapeHtml(f.hash)}" title="Remove">✕</button>`;
-      li.querySelector('button')!.addEventListener('click', () => {
+
+      const nameBtn = document.createElement('button');
+      nameBtn.className = 'attachment-name';
+      nameBtn.title = `View ${f.originalName}`;
+      nameBtn.textContent = f.originalName;
+      nameBtn.addEventListener('click', () => {
+        const data = workspace.attachmentData.get(f.hash);
+        if (!data) return;
+        const blob = new Blob([data.buffer as ArrayBuffer], { type: f.mime });
+        const url = URL.createObjectURL(blob);
+        if (f.mime === 'application/pdf') {
+          window.open(url, '_blank');
+          setTimeout(() => URL.revokeObjectURL(url), 30_000);
+        } else if (f.mime.startsWith('image/')) {
+          showImageModal(url, f.originalName);
+        } else {
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = f.originalName;
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 10_000);
+        }
+      });
+
+      const meta = document.createElement('span');
+      meta.className = 'meta';
+      meta.textContent = `${f.mime} · ${formatBytes(f.size)}`;
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'btn-danger';
+      removeBtn.setAttribute('data-hash', f.hash);
+      removeBtn.title = 'Remove';
+      removeBtn.textContent = '✕';
+      removeBtn.addEventListener('click', () => {
         onRemoveAttachment(f.hash);
         renderAttachments();
       });
+
+      li.appendChild(nameBtn);
+      li.appendChild(meta);
+      li.appendChild(removeBtn);
       ul.appendChild(li);
     });
   }
@@ -277,6 +432,38 @@ export function renderWelcome(
     const file = openInput.files?.[0];
     if (file) onOpen(file);
   });
+}
+
+// ── Image modal ───────────────────────────────────────────────────────────────
+
+function showImageModal(url: string, name: string) {
+  const overlay = document.createElement('div');
+  overlay.className = 'img-overlay';
+
+  const inner = document.createElement('div');
+  inner.className = 'img-overlay-inner';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'img-overlay-close';
+  closeBtn.setAttribute('aria-label', 'Close');
+  closeBtn.textContent = '✕';
+
+  const img = document.createElement('img');
+  img.src = url;
+  img.alt = name;
+
+  inner.appendChild(closeBtn);
+  inner.appendChild(img);
+  overlay.appendChild(inner);
+  document.body.appendChild(overlay);
+
+  function close() {
+    document.body.removeChild(overlay);
+    URL.revokeObjectURL(url);
+  }
+
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  closeBtn.addEventListener('click', close);
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
