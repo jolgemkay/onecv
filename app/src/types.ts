@@ -35,6 +35,14 @@ export interface Certificate {
   url: string;
 }
 
+export interface Project {
+  title: string;
+  role: string;
+  from: string;
+  to: string;
+  description: string;
+}
+
 export interface CvJson {
   name: string;
   email: string;
@@ -43,6 +51,7 @@ export interface CvJson {
   summary: string;
   experience: Experience[];
   education: Education[];
+  projects: Project[];
   skills: string[];
   courses: Course[];
   certificates: Certificate[];
