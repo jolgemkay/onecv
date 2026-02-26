@@ -115,9 +115,7 @@ export function renderWorkspace(
       const card = document.createElement('details');
       card.className = 'entry-card';
       card.open = true;
-      const label = (exp.title || exp.company)
-        ? `${exp.title || '(untitled)'}${exp.company ? ' @ ' + exp.company : ''}`
-        : `New Experience`;
+      const label = exp.title || 'New Experience';
       card.innerHTML = `
         <summary class="entry-summary">
           <span>${escapeHtml(label)}</span>
@@ -141,6 +139,10 @@ export function renderWorkspace(
         el.value = String(exp[key] ?? '');
         el.addEventListener('input', () => {
           cv.experience[i][key as keyof Experience] = el.value as never;
+          if (key === 'title') {
+            const summarySpan = card.querySelector<HTMLSpanElement>('.entry-summary > span')!;
+            summarySpan.textContent = cv.experience[i].title || 'New Experience';
+          }
           onChange?.();
         });
       });
@@ -167,9 +169,7 @@ export function renderWorkspace(
       const card = document.createElement('details');
       card.className = 'entry-card';
       card.open = true;
-      const label = (edu.degree || edu.institution)
-        ? `${edu.degree || '(no degree)'}${edu.institution ? ' @ ' + edu.institution : ''}`
-        : `New Education`;
+      const label = edu.degree || 'New Education';
       card.innerHTML = `
         <summary class="entry-summary">
           <span>${escapeHtml(label)}</span>
@@ -188,6 +188,10 @@ export function renderWorkspace(
         el.value = String(edu[key] ?? '');
         el.addEventListener('input', () => {
           cv.education[i][key as keyof Education] = el.value as never;
+          if (key === 'degree') {
+            const summarySpan = card.querySelector<HTMLSpanElement>('.entry-summary > span')!;
+            summarySpan.textContent = cv.education[i].degree || 'New Education';
+          }
           onChange?.();
         });
       });
@@ -236,6 +240,10 @@ export function renderWorkspace(
         el.value = String(course[key] ?? '');
         el.addEventListener('input', () => {
           cv.courses[i][key as keyof Course] = el.value as never;
+          if (key === 'title') {
+            const summarySpan = card.querySelector<HTMLSpanElement>('.entry-summary > span')!;
+            summarySpan.textContent = cv.courses[i].title || 'New Course';
+          }
           onChange?.();
         });
       });
@@ -284,6 +292,10 @@ export function renderWorkspace(
         el.value = String(cert[key] ?? '');
         el.addEventListener('input', () => {
           cv.certificates[i][key as keyof Certificate] = el.value as never;
+          if (key === 'title') {
+            const summarySpan = card.querySelector<HTMLSpanElement>('.entry-summary > span')!;
+            summarySpan.textContent = cv.certificates[i].title || 'New Certificate';
+          }
           onChange?.();
         });
       });
