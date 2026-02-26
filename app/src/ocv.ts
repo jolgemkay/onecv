@@ -69,6 +69,8 @@ export function createEmptyWorkspace(): OcvWorkspace {
       experience: [],
       education: [],
       skills: [],
+      courses: [],
+      certificates: [],
     },
     attachmentData: new Map(),
   };

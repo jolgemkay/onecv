@@ -21,6 +21,20 @@ export interface Manifest {
   files: ManifestFile[];
 }
 
+export interface Course {
+  title: string;
+  provider: string;
+  date: string;
+  url: string;
+}
+
+export interface Certificate {
+  title: string;
+  issuer: string;
+  date: string;
+  url: string;
+}
+
 export interface CvJson {
   name: string;
   email: string;
@@ -30,6 +44,8 @@ export interface CvJson {
   experience: Experience[];
   education: Education[];
   skills: string[];
+  courses: Course[];
+  certificates: Certificate[];
 }
 
 export interface Experience {
