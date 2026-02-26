@@ -47,7 +47,7 @@ export async function exportOcv(workspace: OcvWorkspace): Promise<Blob> {
     zip.file(ATTACHMENTS_DIR + hash, bytes);
   }
 
-  return zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+  return zip.generateAsync({ type: 'blob', compression: 'DEFLATE', mimeType: 'application/octet-stream' });
 }
 
 /** Create a brand-new empty workspace. */
