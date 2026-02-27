@@ -1,4 +1,4 @@
-import type { OcvWorkspace, Experience, Education, Course, Certificate } from './types.js';
+import type { OcvWorkspace, Experience, Education, Course, Certificate, Project } from './types.js';
 
 /**
  * Render the full workspace editing UI into #main-content.
@@ -10,10 +10,12 @@ export function renderWorkspace(
   onAddAttachment: (file: File) => Promise<void>,
   onRemoveAttachment: (hash: string) => void,
   onChange?: () => void,
+  startCollapsed = false,
 ): void {
+  const open = startCollapsed ? '' : ' open';
   container.innerHTML = `
-    <details open class="card" id="section-cv">
-      <summary class="card-summary"><h2>CV — Personal Info</h2></summary>
+    <details${open} class="card" id="section-cv">
+      <summary class="card-summary"><h2>Personal information</h2></summary>
       <div class="form-grid form-grid-2">
         <div class="field">
           <label for="cv-name">Full Name</label>
@@ -38,32 +40,38 @@ export function renderWorkspace(
       </div>
     </details>
 
-    <details open class="card" id="section-experience">
-      <summary class="card-summary"><h2>Experience</h2></summary>
+    <details${open} class="card" id="section-experience">
+      <summary class="card-summary"><h2>Experience<span class="section-count" id="count-experience"></span></h2></summary>
       <div id="experience-list" class="entry-list"></div>
       <button id="btn-add-exp" class="btn-secondary btn-sm">+ Add Experience</button>
     </details>
 
-    <details open class="card" id="section-education">
-      <summary class="card-summary"><h2>Education</h2></summary>
+    <details${open} class="card" id="section-education">
+      <summary class="card-summary"><h2>Education<span class="section-count" id="count-education"></span></h2></summary>
       <div id="education-list" class="entry-list"></div>
       <button id="btn-add-edu" class="btn-secondary btn-sm">+ Add Education</button>
     </details>
 
-    <details open class="card" id="section-courses">
-      <summary class="card-summary"><h2>Courses</h2></summary>
+    <details${open} class="card" id="section-projects">
+      <summary class="card-summary"><h2>Projects<span class="section-count" id="count-projects"></span></h2></summary>
+      <div id="projects-list" class="entry-list"></div>
+      <button id="btn-add-project" class="btn-secondary btn-sm">+ Add Project</button>
+    </details>
+
+    <details${open} class="card" id="section-courses">
+      <summary class="card-summary"><h2>Courses<span class="section-count" id="count-courses"></span></h2></summary>
       <div id="courses-list" class="entry-list"></div>
       <button id="btn-add-course" class="btn-secondary btn-sm">+ Add Course</button>
     </details>
 
-    <details open class="card" id="section-certificates">
-      <summary class="card-summary"><h2>Certificates</h2></summary>
+    <details${open} class="card" id="section-certificates">
+      <summary class="card-summary"><h2>Certificates<span class="section-count" id="count-certificates"></span></h2></summary>
       <div id="certificates-list" class="entry-list"></div>
       <button id="btn-add-cert" class="btn-secondary btn-sm">+ Add Certificate</button>
     </details>
 
-    <details open class="card" id="section-skills">
-      <summary class="card-summary"><h2>Skills</h2></summary>
+    <details${open} class="card" id="section-skills">
+      <summary class="card-summary"><h2>Skills<span class="section-count" id="count-skills"></span></h2></summary>
       <div id="skills-tags" class="tags"></div>
       <div class="field" style="display:flex;gap:.5rem;align-items:center">
         <input type="text" id="skill-input" placeholder="Add a skill…" style="flex:1" />
@@ -71,8 +79,8 @@ export function renderWorkspace(
       </div>
     </details>
 
-    <details open class="card" id="section-attachments">
-      <summary class="card-summary"><h2>Attachments</h2></summary>
+    <details${open} class="card" id="section-attachments">
+      <summary class="card-summary"><h2>Attachments<span class="section-count" id="count-attachments"></span></h2></summary>
       <ul id="attachment-list" class="attachment-list"></ul>
       <div>
         <input type="file" id="attachment-file" style="display:none" multiple accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.gif,.webp,.zip" />
@@ -107,14 +115,47 @@ export function renderWorkspace(
   bindInput('#cv-location', 'location');
   bindInput('#cv-summary', 'summary');
 
+  // ── Section helpers ────────────────────────────────────────────────────
+  function setupSection(sectionId: string, countId: string, getCount: () => number) {
+    const section = container.querySelector(sectionId) as HTMLDetailsElement;
+    const countEl = container.querySelector(countId) as HTMLSpanElement;
+    function updateCount() {
+      const n = getCount();
+      countEl.textContent = n > 0 ? String(n) : '';
+    }
+    updateCount();
+    section.addEventListener('toggle', () => {
+      updateCount();
+      if (!section.open) {
+        section.querySelectorAll<HTMLDetailsElement>('details.entry-card').forEach(c => { c.open = false; });
+      }
+    });
+    return updateCount;
+  }
+
+  function enforceOneOpen(listEl: HTMLElement, card: HTMLDetailsElement) {
+    card.addEventListener('toggle', () => {
+      if (card.open) {
+        listEl.querySelectorAll<HTMLDetailsElement>('details.entry-card').forEach(sibling => {
+          if (sibling !== card) sibling.open = false;
+        });
+      }
+    });
+  }
+
+  function openLastCard(listEl: HTMLElement) {
+    const cards = listEl.querySelectorAll<HTMLDetailsElement>('details.entry-card');
+    if (cards.length > 0) cards[cards.length - 1].open = true;
+  }
+
   // ── Experience ─────────────────────────────────────────────────────────
   const expList = container.querySelector('#experience-list') as HTMLDivElement;
+  const updateExpCount = setupSection('#section-experience', '#count-experience', () => cv.experience.length);
   function renderExperience() {
     expList.innerHTML = '';
     cv.experience.forEach((exp, i) => {
       const card = document.createElement('details');
       card.className = 'entry-card';
-      card.open = true;
       const label = exp.title || 'New Experience';
       card.innerHTML = `
         <summary class="entry-summary">
@@ -132,6 +173,7 @@ export function renderWorkspace(
           </div>
         </div>`;
       expList.appendChild(card);
+      enforceOneOpen(expList, card);
 
       // set values after inserting so special chars are safe
       card.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-key]').forEach(el => {
@@ -151,24 +193,27 @@ export function renderWorkspace(
         e.stopPropagation();
         cv.experience.splice(i, 1);
         renderExperience();
+        updateExpCount();
       });
     });
+    updateExpCount();
   }
   renderExperience();
 
   container.querySelector('#btn-add-exp')!.addEventListener('click', () => {
     cv.experience.push({ title: '', company: '', from: '', to: '', description: '' });
     renderExperience();
+    openLastCard(expList);
   });
 
   // ── Education ──────────────────────────────────────────────────────────
   const eduList = container.querySelector('#education-list') as HTMLDivElement;
+  const updateEduCount = setupSection('#section-education', '#count-education', () => cv.education.length);
   function renderEducation() {
     eduList.innerHTML = '';
     cv.education.forEach((edu, i) => {
       const card = document.createElement('details');
       card.className = 'entry-card';
-      card.open = true;
       const label = edu.degree || 'New Education';
       card.innerHTML = `
         <summary class="entry-summary">
@@ -182,6 +227,7 @@ export function renderWorkspace(
           <div class="field"><label>To</label><input type="date" data-edu="${i}" data-key="to" value="" /></div>
         </div>`;
       eduList.appendChild(card);
+      enforceOneOpen(eduList, card);
 
       card.querySelectorAll<HTMLInputElement>('[data-key]').forEach(el => {
         const key = el.dataset.key as keyof Education;
@@ -200,25 +246,86 @@ export function renderWorkspace(
         e.stopPropagation();
         cv.education.splice(i, 1);
         renderEducation();
+        updateEduCount();
       });
     });
+    updateEduCount();
   }
   renderEducation();
 
   container.querySelector('#btn-add-edu')!.addEventListener('click', () => {
     cv.education.push({ degree: '', institution: '', from: '', to: '' });
     renderEducation();
+    openLastCard(eduList);
+  });
+
+  // ── Projects ───────────────────────────────────────────────────────────
+  cv.projects = cv.projects ?? [];
+  const projectsList = container.querySelector('#projects-list') as HTMLDivElement;
+  const updateProjectsCount = setupSection('#section-projects', '#count-projects', () => cv.projects.length);
+  function renderProjects() {
+    projectsList.innerHTML = '';
+    cv.projects.forEach((project, i) => {
+      const card = document.createElement('details');
+      card.className = 'entry-card';
+      const label = project.title || 'New Project';
+      card.innerHTML = `
+        <summary class="entry-summary">
+          <span>${escapeHtml(label)}</span>
+          <button class="btn-danger btn-sm remove-entry" data-index="${i}" title="Remove">✕</button>
+        </summary>
+        <div class="form-grid form-grid-2" style="gap:.6rem;padding:.85rem">
+          <div class="field"><label>Title</label><input type="text" data-key="title" value="" /></div>
+          <div class="field"><label>Role</label><input type="text" data-key="role" value="" /></div>
+          <div class="field"><label>From</label><input type="date" data-key="from" value="" /></div>
+          <div class="field"><label>To</label><input type="date" data-key="to" value="" /></div>
+          <div class="field" style="grid-column:1/-1">
+            <label>Description</label>
+            <textarea data-key="description"></textarea>
+          </div>
+        </div>`;
+      projectsList.appendChild(card);
+      enforceOneOpen(projectsList, card);
+
+      card.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-key]').forEach(el => {
+        const key = el.dataset.key as keyof Project;
+        el.value = String(project[key] ?? '');
+        el.addEventListener('input', () => {
+          cv.projects[i][key as keyof Project] = el.value as never;
+          if (key === 'title') {
+            const summarySpan = card.querySelector<HTMLSpanElement>('.entry-summary > span')!;
+            summarySpan.textContent = cv.projects[i].title || 'New Project';
+          }
+          onChange?.();
+        });
+      });
+
+      card.querySelector('.remove-entry')!.addEventListener('click', (e) => {
+        e.stopPropagation();
+        cv.projects.splice(i, 1);
+        renderProjects();
+        updateProjectsCount();
+      });
+    });
+    updateProjectsCount();
+  }
+  renderProjects();
+
+  container.querySelector('#btn-add-project')!.addEventListener('click', () => {
+    cv.projects.push({ title: '', role: '', from: '', to: '', description: '' });
+    renderProjects();
+    openLastCard(projectsList);
   });
 
   // ── Courses ────────────────────────────────────────────────────────────
   cv.courses = cv.courses ?? [];
   const coursesList = container.querySelector('#courses-list') as HTMLDivElement;
+  const updateCoursesCount = setupSection('#section-courses', '#count-courses', () => cv.courses.length);
   function renderCourses() {
     coursesList.innerHTML = '';
     cv.courses.forEach((course, i) => {
       const card = document.createElement('details');
       card.className = 'entry-card';
-      card.open = true;
       const label = course.title
         ? `${course.title}${course.provider ? ' — ' + course.provider : ''}`
         : `New Course`;
@@ -234,6 +341,7 @@ export function renderWorkspace(
           <div class="field"><label>URL</label><input type="url" data-key="url" value="" placeholder="https://…" /></div>
         </div>`;
       coursesList.appendChild(card);
+      enforceOneOpen(coursesList, card);
 
       card.querySelectorAll<HTMLInputElement>('[data-key]').forEach(el => {
         const key = el.dataset.key as keyof Course;
@@ -252,25 +360,28 @@ export function renderWorkspace(
         e.stopPropagation();
         cv.courses.splice(i, 1);
         renderCourses();
+        updateCoursesCount();
       });
     });
+    updateCoursesCount();
   }
   renderCourses();
 
   container.querySelector('#btn-add-course')!.addEventListener('click', () => {
     cv.courses.push({ title: '', provider: '', date: '', url: '' });
     renderCourses();
+    openLastCard(coursesList);
   });
 
   // ── Certificates ───────────────────────────────────────────────────────
   cv.certificates = cv.certificates ?? [];
   const certsList = container.querySelector('#certificates-list') as HTMLDivElement;
+  const updateCertsCount = setupSection('#section-certificates', '#count-certificates', () => cv.certificates.length);
   function renderCertificates() {
     certsList.innerHTML = '';
     cv.certificates.forEach((cert, i) => {
       const card = document.createElement('details');
       card.className = 'entry-card';
-      card.open = true;
       const label = cert.title
         ? `${cert.title}${cert.issuer ? ' — ' + cert.issuer : ''}`
         : `New Certificate`;
@@ -286,6 +397,7 @@ export function renderWorkspace(
           <div class="field"><label>URL</label><input type="url" data-key="url" value="" placeholder="https://…" /></div>
         </div>`;
       certsList.appendChild(card);
+      enforceOneOpen(certsList, card);
 
       card.querySelectorAll<HTMLInputElement>('[data-key]').forEach(el => {
         const key = el.dataset.key as keyof Certificate;
@@ -304,18 +416,22 @@ export function renderWorkspace(
         e.stopPropagation();
         cv.certificates.splice(i, 1);
         renderCertificates();
+        updateCertsCount();
       });
     });
+    updateCertsCount();
   }
   renderCertificates();
 
   container.querySelector('#btn-add-cert')!.addEventListener('click', () => {
     cv.certificates.push({ title: '', issuer: '', date: '', url: '' });
     renderCertificates();
+    openLastCard(certsList);
   });
 
   // ── Skills ────────────────────────────────────────────────────────────
   const skillsTags = container.querySelector('#skills-tags') as HTMLDivElement;
+  const updateSkillsCount = setupSection('#section-skills', '#count-skills', () => cv.skills.length);
   function renderSkills() {
     skillsTags.innerHTML = '';
     cv.skills.forEach((skill, i) => {
@@ -325,9 +441,11 @@ export function renderWorkspace(
       tag.querySelector('button')!.addEventListener('click', () => {
         cv.skills.splice(i, 1);
         renderSkills();
+        updateSkillsCount();
       });
       skillsTags.appendChild(tag);
     });
+    updateSkillsCount();
   }
   renderSkills();
 
@@ -344,6 +462,7 @@ export function renderWorkspace(
   skillInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } });
 
   // ── Attachments ────────────────────────────────────────────────────────
+  const updateAttachmentsCount = setupSection('#section-attachments', '#count-attachments', () => workspace.manifest.files.length);
   function renderAttachments() {
     const ul = container.querySelector('#attachment-list') as HTMLUListElement;
     ul.innerHTML = '';
@@ -353,6 +472,7 @@ export function renderWorkspace(
       li.style.fontSize = '.85rem';
       li.textContent = 'No attachments.';
       ul.appendChild(li);
+      updateAttachmentsCount();
       return;
     }
     workspace.manifest.files.forEach(f => {
@@ -401,6 +521,7 @@ export function renderWorkspace(
       li.appendChild(removeBtn);
       ul.appendChild(li);
     });
+    updateAttachmentsCount();
   }
   renderAttachments();
 

@@ -326,6 +326,20 @@ details.entry-card[open] > .entry-summary {
   cursor: pointer;
 }
 
+/* ─── Section count badge (shown when section is collapsed) ─── */
+.section-count {
+  display: none;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 999px;
+  font-size: .7rem;
+  padding: .1rem .45rem;
+  margin-left: .4rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+details.card:not([open]) .section-count:not(:empty) { display: inline; }
+
 /* ─── Delete section at the bottom ─── */
 #delete-section {
   display: flex;

@@ -58,7 +58,7 @@ function showWelcome() {
 }
 
 // ── Show editor ──────────────────────────────────────────────────────────────
-function showEditor(ws: OcvWorkspace) {
+function showEditor(ws: OcvWorkspace, startCollapsed = false) {
   current = ws;
   renderWorkspace(
     mainContent,
@@ -67,6 +67,7 @@ function showEditor(ws: OcvWorkspace) {
     handleAddAttachment,
     handleRemoveAttachment,
     scheduleAutoSave,
+    startCollapsed,
   );
   setHeaderButtons(`
     <button id="btn-header-save" class="header-btn" title="Save">
@@ -90,7 +91,7 @@ async function handleOpen(file: File) {
   try {
     const buf = await file.arrayBuffer();
     const ws = await openOcv(buf);
-    showEditor(ws);
+    showEditor(ws, true);
     showToast(`Opened "${file.name}"`);
   } catch (err) {
     alert(`Could not open file: ${err instanceof Error ? err.message : String(err)}`);

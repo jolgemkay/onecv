@@ -68,6 +68,7 @@ export function createEmptyWorkspace(): OcvWorkspace {
       summary: '',
       experience: [],
       education: [],
+      projects: [],
       skills: [],
       courses: [],
       certificates: [],
